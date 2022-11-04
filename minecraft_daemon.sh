@@ -51,7 +51,6 @@ echo "Server Installed"
 echo "Now Configuring RCON"
 echo "Please give me an RCON port.  If you'd like to use the default of \"25575\" then please leave this blank and just hit enter"
   read rcon_port
-  read rcon_port
 if [ "$rcon_port" = "" ]; then
   rcon_port=25575
   echo "rcon port is set to DEFAULT: "$rcon_port
