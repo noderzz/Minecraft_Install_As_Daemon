@@ -24,7 +24,7 @@ set_resources () {
 }
 
 systemd_unit_creation () {
-  sudo echo "
+  echo "
 [Unit]
 Description=Minecraft Server
 After=network.target
@@ -43,7 +43,26 @@ ExecStart=/usr/bin/java -Xmx"$minecraft_mem"M -Xms"$minecraft_mem"M -jar server.
 ExecStop=/opt/minecraft/tools/mcrcon/mcrcon -H 127.0.0.1 -P "$rcon_port" -p "$rcon_password" stop
 
 [Install]
-WantedBy=multi-user.target" > test.txt && sudo mv test.txt /etc/systemd/system/minecraft.service
+WantedBy=multi-user.target" > ~/test.txt && sudo mv ~/test.txt /etc/systemd/system/minecraft.service
+}
+
+create_backup_file () {
+  echo "
+#!/bin/bash
+
+function rcon {
+  /opt/minecraft/tools/mcrcon/mcrcon -H 127.0.0.1 -P "$rcon_port" -p "$rcon_password" "$1"
+}
+
+rcon "save-off"
+rcon "save-all"
+tar -cvpzf /opt/minecraft/backups/server-$(date +%F-%H-%M).tar.gz /opt/minecraft/server
+rcon "save-on"
+
+## Delete older backups
+find /opt/minecraft/backups/ -type f -mtime +7 -name '*.gz' -delete
+
+  " > test.txt && sudo mv test.txt /opt/minecraft/tools/backup.sh
 }
 
 
@@ -118,4 +137,7 @@ sudo systemctl start minecraft
 #Open up ports in firewall
 sudo ufw allow 25565/tcp
 
-#Configure Backups
+#####  Configure Backups  #####
+#Create the backup file
+create_backup_file
+sudo chown minecraft:minecraft /opt/minecraft/tools/backup.sh
