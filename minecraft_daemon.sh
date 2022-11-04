@@ -5,9 +5,53 @@ answer=""
 javacheck=""
 rcon_port=25575
 rcon_password=""
+total_mem=""
+minecraft_mem=""
+
+#Functions
+set_resources () {
+   total_mem=`free -h | grep Mem | cut -d ":" -f2 | cut -d "." -f1 | tr -d " "`
+   echo "It looks like you have a total of "$total_mem"G of memory."
+   echo "It may not be the best idea to use all available memory for the server, how much ram would you like to use to run the minecraft server?"
+   read minecraft_mem
+   if [ "$minecraft_mem" -gt "$total_mem" ]; then
+     clear
+     echo "You don't seem to have that much memory available."
+     set_resources
+   else
+     minecraft_mem=$((minecraft_mem*1024))
+   fi
+}
+
+systemd_unit_creation () {
+  sudo echo "
+[Unit]
+Description=Minecraft Server
+After=network.target
+
+[Service]
+User=minecraft
+Nice=1
+KillMode=none
+SuccessExitStatus=0 1
+ProtectHome=true
+ProtectSystem=full
+PrivateDevices=true
+NoNewPrivileges=true
+WorkingDirectory=/opt/minecraft/server
+ExecStart=/usr/bin/java -Xmx"$minecraft_mem"M -Xms"$minecraft_mem"M -jar server.jar nogui
+ExecStop=/opt/minecraft/tools/mcrcon/mcrcon -H 127.0.0.1 -P "$rcon_port" -p "$rcon_password" stop
+
+[Install]
+WantedBy=multi-user.target" > test.txt && sudo mv test.txt /etc/systemd/system/minecraft.service
+}
 
 
-#Check if you have priviledged access
+####################################################################################################################################################
+################################################                     Start Code                     ################################################
+####################################################################################################################################################
+
+#####  Check if you have priviledged access  #####
 clear
 echo "Please ensure you have sudo credentials before starting installation."
 echo ""
@@ -20,7 +64,7 @@ else
   echo "So the answer is yes."
 fi
 
-#Update the Server/Check Java Runtime and Install if missing
+#####  Update the Server/Check Java Runtime and Install if missing  #####
 javacheck=`java -version 2>&1 | grep version | cut -d '"' -f2 | cut -d "." -f1`
 if [ "$javacheck" = 16 ] || [ "$javacheck" = 17 ] || [ "$javacheck" = 18 ]; then 
   echo "Java version is "$javacheck"."
@@ -29,7 +73,7 @@ else
   sudo apt install openjdk-18-jre-headless -y
 fi
 
-#Create Minecraft User & Install server as that user
+#####  Create Minecraft User & Install server as that user  #####
 echo "Creating Minecraft system user to run Minecraft server"
 sudo useradd -r -m -U -d /opt/minecraft -s /bin/bash minecraft
 sleep 3
@@ -47,7 +91,7 @@ sudo sed -i "s/\("eula" *= *\).*/\1true/" /opt/minecraft/server/eula.txt
 echo "Server Installed"
 
 
-#Configure Minecraft Server/RCON
+#####  Configure Minecraft Server/RCON  #####
 echo "Now Configuring RCON"
 echo "Please give me an RCON port.  If you'd like to use the default of \"25575\" then please leave this blank and just hit enter"
   read rcon_port
@@ -64,6 +108,14 @@ sudo sed -i "s/\("rcon.port" *= *\).*/\1$rcon_port/" /opt/minecraft/server/serve
 sudo sed -i "s/\("rcon.password" *= *\).*/\1$rcon_password/" /opt/minecraft/server/server.properties
 sudo sed -i "s/\("enable-rcon" *= *\).*/\1true/" /opt/minecraft/server/server.properties
 
-#Create Systemd Unit File/Adjust Firewall
+#####  Create Systemd Unit File/Adjust Firewall  #####
+#Set Resources for Server
+set_resources
+#Create Systemd Unit File and start the daemon
+systemd_unit_creation
+sudo systemctl daemon-reload
+sudo systemctl start minecraft
+#Open up ports in firewall
+sudo ufw allow 25565/tcp
 
 #Configure Backups
