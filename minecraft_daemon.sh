@@ -141,4 +141,6 @@ sudo ufw allow 25565/tcp
 #Create the backup file
 create_backup_file
 sudo chown minecraft:minecraft /opt/minecraft/tools/backup.sh
-crontab -l > "0 23 * * * /opt/minecraft/tools/backup.sh"
+sudo chmod +x /opt/minecraft/tools/backup.sh
+#Add this shell script to the crontab
+sudo -u minecraft bash -c 'echo "0 23 * * * /opt/minecraft/tools/backup.sh" | crontab -'
