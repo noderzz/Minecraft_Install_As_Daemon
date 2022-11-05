@@ -102,8 +102,9 @@ echo "Creating Minecraft Server Directories and Installing Server"
 sleep 2
 sudo -u minecraft bash -c 'mkdir -p ~/{backups,tools,server}'
 sudo -u minecraft bash -c 'git clone https://github.com/Tiiffi/mcrcon.git ~/tools/mcrcon'
-sudo apt get-install gcc -y
-sudo -u minecraft bash -c 'gcc -std=gnu11 -pedantic -Wall -Wextra -O2 -s -o mcrcon ~/tools/mcrcon/mcrcon.c'
+sudo apt-get install gcc -y
+sudo gcc -std=gnu11 -pedantic -Wall -Wextra -O2 -s -o mcrcon /opt/minecraft/tools/mcrcon/mcrcon.c
+sudo -u minecraft bash -c 'gcc -std=gnu11 -pedantic -Wall -Wextra -O2 -s -o ~/tools/mcrcon/mcrcon ~/tools/mcrcon/mcrcon.c'
 sudo -u minecraft bash -c 'wget https://piston-data.mojang.com/v1/objects/f69c284232d7c7580bd89a5a4931c3581eae1378/server.jar -P ~/server'
 sudo -u minecraft bash -c 'cd ~/server && java -Xmx1024M -Xms1024M -jar server.jar nogui'
 sudo sed -i "s/\("eula" *= *\).*/\1true/" /opt/minecraft/server/eula.txt
