@@ -1,6 +1,8 @@
 #!/bin/bash
+####################################################################################################################################################
+################################################                     Variables                     #################################################
+####################################################################################################################################################
 
-#Variables
 answer=""
 javacheck=""
 rcon_port=25575
@@ -8,7 +10,10 @@ rcon_password=""
 total_mem=""
 minecraft_mem=""
 
-#Functions
+####################################################################################################################################################
+################################################                     Functions                     #################################################
+####################################################################################################################################################
+
 set_resources () {
    total_mem=`free -h | grep Mem | cut -d ":" -f2 | cut -d "." -f1 | tr -d " "`
    echo "It looks like you have a total of "$total_mem"G of memory."
@@ -67,21 +72,29 @@ find /opt/minecraft/backups/ -type f -mtime +7 -name '*.gz' -delete
 
 
 ####################################################################################################################################################
-################################################                     Start Code                     ################################################
+###################################################                     Code                     ###################################################
 ####################################################################################################################################################
 
 #####  Check if you have priviledged access  #####
 clear
-echo "Please ensure you have sudo credentials before starting installation."
-echo ""
-echo "Does this user have root privileges? (Y/N)"
-  read answer
-
-if [ "$answer" != "Y" ] && [ "$answer" != "y" ] && [ "$answer" != "Yes" ] && [ "$answer" != "YES" ] && [ "$answer" != "yes" ]; then 
-  echo "So the answer is no."
+echo "This script must be run as a user with root privileges."
+echo "Now checking if current user has root privileges"
+  sleep 2
+  answer=`sudo -v &> /dev/null && echo "Sudoer" || echo "Not Sudoer"`
+if [ "$answer" = "Not Sudoer" ]; then 
+  echo "It doesnt appear that your user has root privileges."
+  sleep 1
+  echo "Please login as a user with sudo/root privileges and try again."
+  sleep 1
+  echo "Now exiting script."
+  exit 1
 else
-  echo "So the answer is yes."
+  echo "It appears this user has root privileges."
+  sleep 1
+  echo "Now running Java check."
+  sleep 1
 fi
+
 
 #####  Update the Server/Check Java Runtime and Install if missing  #####
 javacheck=`java -version 2>&1 | grep version | cut -d '"' -f2 | cut -d "." -f1`
@@ -103,7 +116,6 @@ sleep 2
 sudo -u minecraft bash -c 'mkdir -p ~/{backups,tools,server}'
 sudo -u minecraft bash -c 'git clone https://github.com/Tiiffi/mcrcon.git ~/tools/mcrcon'
 sudo apt-get install gcc -y
-sudo gcc -std=gnu11 -pedantic -Wall -Wextra -O2 -s -o mcrcon /opt/minecraft/tools/mcrcon/mcrcon.c
 sudo -u minecraft bash -c 'gcc -std=gnu11 -pedantic -Wall -Wextra -O2 -s -o ~/tools/mcrcon/mcrcon ~/tools/mcrcon/mcrcon.c'
 sudo -u minecraft bash -c 'wget https://piston-data.mojang.com/v1/objects/f69c284232d7c7580bd89a5a4931c3581eae1378/server.jar -P ~/server'
 sudo -u minecraft bash -c 'cd ~/server && java -Xmx1024M -Xms1024M -jar server.jar nogui'
