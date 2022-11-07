@@ -80,9 +80,10 @@ clear
 echo "This script must be run as a user with root privileges."
 echo "Now checking if current user has root privileges"
   sleep 2
-  answer=`sudo -v &> /dev/null && echo "Sudoer" || echo "Not Sudoer"`
-if [ "$answer" = "Not Sudoer" ]; then 
-  echo "It doesnt appear that your user has root privileges."
+  answer=`sudo whoami`
+
+if [ "$answer" != "root" ]; then 
+  echo "It doesn't appear that your user has root privileges."
   sleep 1
   echo "Please login as a user with sudo/root privileges and try again."
   sleep 1
