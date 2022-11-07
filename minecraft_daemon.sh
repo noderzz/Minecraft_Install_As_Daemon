@@ -92,39 +92,50 @@ if [ "$answer" != "root" ]; then
 else
   echo "It appears this user has root privileges."
   sleep 1
-  echo "Now running Java check."
-  sleep 1
 fi
 
 
 #####  Update the Server/Check Java Runtime and Install if missing  #####
+  echo "Now running Java check."
+  sleep 1
 javacheck=`java -version 2>&1 | grep version | cut -d '"' -f2 | cut -d "." -f1`
 if [ "$javacheck" = 16 ] || [ "$javacheck" = 17 ] || [ "$javacheck" = 18 ]; then 
   echo "Java version is "$javacheck"."
+  sleep 2
 else
-  echo "Java version not detected or too old, installing Java now."
+  echo "Java version too old or not detected."
+  sleep 2
   sudo apt install openjdk-18-jre-headless -y
 fi
 
 #####  Create Minecraft User & Install server as that user  #####
+clear
 echo "Creating Minecraft system user to run Minecraft server"
-sudo useradd -r -m -U -d /opt/minecraft -s /bin/bash minecraft
+sudo useradd -r -m -U -d /opt/minecraft -s /bin/bash minecraft && echo "Minecraft User Added"
 sleep 3
-echo "Minecraft User Added"
-echo ""
-echo "Creating Minecraft Server Directories and Installing Server"
-sleep 2
-sudo -u minecraft bash -c 'mkdir -p ~/{backups,tools,server}'
-sudo -u minecraft bash -c 'git clone https://github.com/Tiiffi/mcrcon.git ~/tools/mcrcon'
-sudo apt-get install gcc -y
-sudo -u minecraft bash -c 'gcc -std=gnu11 -pedantic -Wall -Wextra -O2 -s -o ~/tools/mcrcon/mcrcon ~/tools/mcrcon/mcrcon.c'
-sudo -u minecraft bash -c 'wget https://piston-data.mojang.com/v1/objects/f69c284232d7c7580bd89a5a4931c3581eae1378/server.jar -P ~/server'
-sudo -u minecraft bash -c 'cd ~/server && java -Xmx1024M -Xms1024M -jar server.jar nogui'
-sudo sed -i "s/\("eula" *= *\).*/\1true/" /opt/minecraft/server/eula.txt
-echo "Server Installed"
+echo "" && echo "Creating Minecraft Server Directories and Installing Server"
+    sleep 2
+    sudo -u minecraft bash -c 'mkdir -p ~/{backups,tools,server}' && echo '"backups", "tools" and "server" directories created.'
+    sleep 2
+    clear
+    echo "Now installing mcrcon"
+    sudo -u minecraft bash -c 'git clone https://github.com/Tiiffi/mcrcon.git ~/tools/mcrcon' && echo "mcrcon successfully downloaded"
+    echo "Now installing GCC"
+    sudo apt-get install gcc -y && echo "GCC Successfully Installed"
+    sleep 2
+    echo "Now completing mcrcon installation."
+    sudo -u minecraft bash -c 'gcc -std=gnu11 -pedantic -Wall -Wextra -O2 -s -o ~/tools/mcrcon/mcrcon ~/tools/mcrcon/mcrcon.c' && echo "mcrcon successfully installed"
+    sleep 2
+    clear
+    echo "Downloading latest Minecraft Server version."
+    sudo -u minecraft bash -c 'wget https://piston-data.mojang.com/v1/objects/f69c284232d7c7580bd89a5a4931c3581eae1378/server.jar -P ~/server' && echo "Minecraft server downloaded"
+    sleep 2
+    sudo -u minecraft bash -c 'cd ~/server && java -Xmx1024M -Xms1024M -jar server.jar nogui'
+    sudo sed -i "s/\("eula" *= *\).*/\1true/" /opt/minecraft/server/eula.txt && echo "Server Installed"
 
 
 #####  Configure Minecraft Server/RCON  #####
+clear
 echo "Now Configuring RCON"
 echo "Please give me an RCON port.  If you'd like to use the default of \"25575\" then please leave this blank and just hit enter"
   read rcon_port
@@ -145,16 +156,28 @@ sudo sed -i "s/\("enable-rcon" *= *\).*/\1true/" /opt/minecraft/server/server.pr
 #Set Resources for Server
 set_resources
 #Create Systemd Unit File and start the daemon
-systemd_unit_creation
-sudo systemctl daemon-reload
-sudo systemctl start minecraft
+clear
+echo "Now creating Minecraft Systemd Unit File."
+sleep 2
+  systemd_unit_creation
+  sudo systemctl daemon-reload
+  sudo systemctl start minecraft
 #Open up ports in firewall
-sudo ufw allow 25565/tcp
+echo "Now opening up firewall for Minecraft server."
+  sudo ufw allow 25565/tcp
 
 #####  Configure Backups  #####
 #Create the backup file
-create_backup_file
-sudo chown minecraft:minecraft /opt/minecraft/tools/backup.sh
-sudo chmod +x /opt/minecraft/tools/backup.sh
+echo "Now creating Minecraft world backup script."
+  create_backup_file
+  sudo chown minecraft:minecraft /opt/minecraft/tools/backup.sh && echo "Minecraft backup script created successfully"
+  sudo chmod +x /opt/minecraft/tools/backup.sh
 #Add this shell script to the crontab
-sudo -u minecraft bash -c 'echo "0 23 * * * /opt/minecraft/tools/backup.sh" | crontab -'
+echo "Adding backup script to crontab"
+  sudo -u minecraft bash -c 'echo "0 23 * * * /opt/minecraft/tools/backup.sh" | crontab -' && echo "Done!"
+  sleep 2
+
+#Displaying Minecraft Server
+clear
+echo "Minecraft Server Installation Complete"
+sudo systemctl status minecraft
