@@ -1,7 +1,7 @@
-<h1>Install Vanilla Minecraft as a Daemon</h1>
+<h1>Install Vanilla Minecraft Server as a Daemon</h1>
 
 <h2>Description</h2>
-This project is a semi-automated script for installing vanilla version 1.19.2 on your Debian device.
+This project is a semi-automated script for installing a vanilla Minecraft server, version 1.19.2, on your Debian device.
 <br />
 
 
