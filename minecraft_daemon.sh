@@ -1,7 +1,8 @@
 #!/bin/bash
-####################################################################################################################################################
-################################################                     Variables                     #################################################
-####################################################################################################################################################
+
+#################
+### Variables ###
+#################
 
 answer=""
 javacheck=""
@@ -9,10 +10,14 @@ rcon_port=25575
 rcon_password=""
 total_mem=""
 minecraft_mem=""
+current_mc_version="1.19.2"
+user_response=""
+user_url=""
+quick_check=""
 
-####################################################################################################################################################
-################################################                     Functions                     #################################################
-####################################################################################################################################################
+#################
+### Functions ###
+#################
 
 set_resources () {
    total_mem=`free -h | grep Mem | cut -d ":" -f2 | cut -d "." -f1 | tr -d " "`
@@ -70,10 +75,88 @@ find /opt/minecraft/backups/ -type f -mtime +7 -name '*.gz' -delete
   " > test.txt && sudo mv test.txt /opt/minecraft/tools/backup.sh
 }
 
+server_download_check () {
+  quick_check=`ls |  sudo ls /opt/minecraft/server | grep -E '(^|\s)server.jar($|\s)'`
+  if [ "$quick_check" != "server.jar" ]; then
+        echo "It doesn't appear that the link downloaded a Minecraft Server."
+        echo "Would you like to try again?"
+        echo "
+        1) Yes
+        2) No
+        "
+        while true; do
+          read -r -p 'Please select option "1" or "2": ' user_response
+          case "$user_response" in
+            1)
+            clear
+            enter_minecraft_server_version
+            ;;
+            2)
+            exit
+            ;;
+            *)
+            echo "Please only select option 1 or 2"
+            continue ;;
+          esac
+          break
+        done
+  fi
+}
 
-####################################################################################################################################################
-###################################################                     Code                     ###################################################
-####################################################################################################################################################
+
+enter_minecraft_server_version () {
+  echo "Currently this script installs Minecraft version "$current_mc_version"."
+  echo "What would you like to do?"
+  echo "
+  (1) Continue with the "$current_mc_version" Install.
+  (2) Enter the URL for the MC Server version myself. (Choose this option if you want to install a newer/older version)
+  "
+    while true; do
+      read -r -p 'Please select option "1" or "2": ' user_response
+      case "$user_response" in
+        1)
+           echo "Downloading latest Minecraft Server version."
+           sudo -u minecraft bash -c 'wget https://piston-data.mojang.com/v1/objects/f69c284232d7c7580bd89a5a4931c3581eae1378/server.jar -P ~/server' && echo "Minecraft server downloaded"
+           sleep 2
+           sudo -u minecraft bash -c 'cd ~/server && java -Xmx1024M -Xms1024M -jar server.jar nogui'
+           sudo sed -i "s/\("eula" *= *\).*/\1true/" /opt/minecraft/server/eula.txt && echo "Server Installed"
+        ;;
+        2)
+        echo "Please paste in the URL for the Minecraft Server you'd like to download: "
+          echo ""
+          read user_url
+            echo "Downloading Minecraft Server from your URL:"
+            sudo -u minecraft bash -c "wget $user_url -P ~/server" && echo "Minecraft server downloaded"
+            sleep 2
+            server_download_check
+            sudo -u minecraft bash -c 'cd ~/server && java -Xmx1024M -Xms1024M -jar server.jar nogui'
+            sudo sed -i "s/\("eula" *= *\).*/\1true/" /opt/minecraft/server/eula.txt && echo "Server Installed"
+        ;;
+        *)
+        clear
+        echo "Invalid option"
+        echo 'Please select option "1" or "2"'
+          echo ""
+          echo "Currently this script installs Minecraft version "$current_mc_version"."
+          echo "What would you like to do?"
+          echo "
+          (1) Continue with the "$current_mc_version" Install.
+          (2) Enter the URL for the MC Server version myself. (Choose this option if you want to install a newer/older version)
+          "
+        continue ;;
+      esac
+      break
+    done
+}
+
+
+  
+  
+
+
+#################
+##### Code ######
+#################
 
 #####  Check if you have priviledged access  #####
 clear
@@ -127,11 +210,9 @@ echo "" && echo "Creating Minecraft Server Directories and Installing Server"
     sudo -u minecraft bash -c 'gcc -std=gnu11 -pedantic -Wall -Wextra -O2 -s -o ~/tools/mcrcon/mcrcon ~/tools/mcrcon/mcrcon.c' && echo "mcrcon successfully installed"
     sleep 2
     clear
-    echo "Downloading latest Minecraft Server version."
-    sudo -u minecraft bash -c 'wget https://piston-data.mojang.com/v1/objects/f69c284232d7c7580bd89a5a4931c3581eae1378/server.jar -P ~/server' && echo "Minecraft server downloaded"
-    sleep 2
-    sudo -u minecraft bash -c 'cd ~/server && java -Xmx1024M -Xms1024M -jar server.jar nogui'
-    sudo sed -i "s/\("eula" *= *\).*/\1true/" /opt/minecraft/server/eula.txt && echo "Server Installed"
+
+#Choose the MC Server Version
+enter_minecraft_server_version
 
 
 #####  Configure Minecraft Server/RCON  #####
