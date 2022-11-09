@@ -14,6 +14,9 @@ current_mc_version="1.19.2"
 user_response=""
 user_url=""
 quick_check=""
+mc_server_difficulty=""
+mc_seed=""
+world_name=""
 
 #################
 ### Functions ###
@@ -103,6 +106,69 @@ server_download_check () {
   fi
 }
 
+server_customize () {
+  echo "Would you like to add a server seed, world name and difficulty setting?"
+  echo ""
+  echo "
+  (1) No, please generate a random seed and use all default settings.
+  (2) Yes, I'd like to input these settings.
+
+  "
+    while true; do
+      read -r -p 'Please select option "1" or "2": ' user_response
+      case "$user_response" in
+        1)
+          break
+        ;;
+        2)
+            echo "What would you like the difficulty setting set to?"
+            echo ""
+            echo "
+            (1) Peaceful
+            (2) Easy
+            (3) Normal
+            (4) Hard
+             "
+              while true; do
+                read -r -p 'Please select option "1" or "2": ' user_response
+                case "$user_response" in
+                  1)
+                    mc_server_difficulty="peaceful"
+                  ;;
+                  2)
+                    mc_server_difficulty="easy"
+                  ;;
+                  3)
+                    mc_server_difficulty="normal"
+                  ;;
+                  4)
+                    mc_server_difficulty="hard"
+                  ;;
+                  *)
+                    echo "Please only select an option between 1-4."
+                  continue ;;
+                esac
+                break
+              done
+              echo "What would you like for the seed?"
+                read mc_seed
+              echo ""
+              echo "What would you like for the world name?"
+                read world_name
+              echo ""
+              echo "Now setting up server settings."
+              sudo sed -i "s/\("difficulty" *= *\).*/\1$mc_server_difficulty/" /opt/minecraft/server/server.properties
+              sudo sed -i "s/\("level-seed" *= *\).*/\1$mc_seed/" /opt/minecraft/server/server.properties
+              sudo sed -i "s/\("level-name" *= *\).*/\1$world_name/" /opt/minecraft/server/server.properties
+
+        ;;
+        *)
+
+        continue ;;
+      esac
+      break
+    done
+}
 
 enter_minecraft_server_version () {
   echo "Currently this script installs Minecraft version "$current_mc_version"."
@@ -226,22 +292,23 @@ enter_minecraft_server_version
 clear
 echo "Now Configuring RCON"
 echo "Please give me an RCON port.  If you'd like to use the default of \"25575\" then please leave this blank and just hit enter"
-  read rcon_port
-if [ "$rcon_port" = "" ]; then
-  rcon_port=25575
-  echo "rcon port is set to DEFAULT: "$rcon_port
-  echo ""
-else
-  echo "rcon port is now: "$rcon_port
-  echo ""
-fi
-
+    read rcon_port
+      if [ "$rcon_port" = "" ]; then
+        rcon_port=25575
+        echo "rcon port is set to DEFAULT: "$rcon_port
+        echo ""
+      else
+        echo "rcon port is now: "$rcon_port
+        echo ""
+      fi
 echo "Please give me an RCON password.  This should be relatively secure."
   read rcon_password
-echo ""
-sudo sed -i "s/\("rcon.port" *= *\).*/\1$rcon_port/" /opt/minecraft/server/server.properties
-sudo sed -i "s/\("rcon.password" *= *\).*/\1$rcon_password/" /opt/minecraft/server/server.properties
-sudo sed -i "s/\("enable-rcon" *= *\).*/\1true/" /opt/minecraft/server/server.properties
+  echo ""
+    sudo sed -i "s/\("rcon.port" *= *\).*/\1$rcon_port/" /opt/minecraft/server/server.properties
+    sudo sed -i "s/\("rcon.password" *= *\).*/\1$rcon_password/" /opt/minecraft/server/server.properties
+    sudo sed -i "s/\("enable-rcon" *= *\).*/\1true/" /opt/minecraft/server/server.properties
+
+server_customize
 
 #####  Create Systemd Unit File/Adjust Firewall  #####
 #Set Resources for Server
@@ -249,15 +316,15 @@ set_resources
 #Create Systemd Unit File and start the daemon
 clear
 echo "Now creating Minecraft Systemd Unit File."
-sleep 2
-  systemd_unit_creation
-  sudo systemctl daemon-reload
-  sudo systemctl start minecraft
+  sleep 2
+    systemd_unit_creation
+    sudo systemctl daemon-reload
+    sudo systemctl start minecraft
 echo ""
 #Open up ports in firewall
 echo "Now opening up firewall for Minecraft server."
   sudo ufw allow 25565/tcp
-echo ""
+    echo ""
 
 #####  Configure Backups  #####
 #Create the backup file
@@ -265,12 +332,12 @@ echo "Now creating Minecraft world backup script."
   create_backup_file
   sudo chown minecraft:minecraft /opt/minecraft/tools/backup.sh && echo "Minecraft backup script created successfully"
   sudo chmod +x /opt/minecraft/tools/backup.sh
-echo ""
+    echo ""
 #Add this shell script to the crontab
 echo "Adding backup script to crontab"
   sudo -u minecraft bash -c 'echo "0 23 * * * /opt/minecraft/tools/backup.sh" | crontab -' && echo "Done!"
   sleep 2
-echo ""
+    echo ""
 
 #Displaying Minecraft Server
 clear
