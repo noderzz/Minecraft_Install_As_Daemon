@@ -76,9 +76,9 @@ find /opt/minecraft/backups/ -type f -mtime +7 -name '*.gz' -delete
 }
 
 server_download_check () {
-  quick_check=`ls |  sudo ls /opt/minecraft/server | grep -E '(^|\s)server.jar($|\s)'`
-  if [ "$quick_check" != "server.jar" ]; then
-        echo "It doesn't appear that the link downloaded a Minecraft Server."
+  quick_check=`echo $user_url | grep "server.jar"`
+  if [ "$quick_check" = "" ]; then
+        echo "It doesn't appear that the link downloads a Minecraft Server."
         echo "Would you like to try again?"
         echo "
         1) Yes
@@ -110,6 +110,7 @@ enter_minecraft_server_version () {
   echo "
   (1) Continue with the "$current_mc_version" Install.
   (2) Enter the URL for the MC Server version myself. (Choose this option if you want to install a newer/older version)
+
   "
     while true; do
       read -r -p 'Please select option "1" or "2": ' user_response
@@ -125,10 +126,10 @@ enter_minecraft_server_version () {
         echo "Please paste in the URL for the Minecraft Server you'd like to download: "
           echo ""
           read user_url
+            server_download_check
             echo "Downloading Minecraft Server from your URL:"
             sudo -u minecraft bash -c "wget $user_url -P ~/server" && echo "Minecraft server downloaded"
             sleep 2
-            server_download_check
             sudo -u minecraft bash -c 'cd ~/server && java -Xmx1024M -Xms1024M -jar server.jar nogui'
             sudo sed -i "s/\("eula" *= *\).*/\1true/" /opt/minecraft/server/eula.txt && echo "Server Installed"
         ;;
@@ -180,13 +181,16 @@ fi
 
 #####  Update the Server/Check Java Runtime and Install if missing  #####
   echo "Now running Java check."
+  echo ""
   sleep 1
 javacheck=`java -version 2>&1 | grep version | cut -d '"' -f2 | cut -d "." -f1`
 if [ "$javacheck" = 16 ] || [ "$javacheck" = 17 ] || [ "$javacheck" = 18 ]; then 
   echo "Java version is "$javacheck"."
+  echo ""
   sleep 2
 else
   echo "Java version too old or not detected."
+  echo ""
   sleep 2
   sudo apt install openjdk-18-jre-headless -y
 fi
@@ -194,14 +198,17 @@ fi
 #####  Create Minecraft User & Install server as that user  #####
 clear
 echo "Creating Minecraft system user to run Minecraft server"
+echo ""
 sudo useradd -r -m -U -d /opt/minecraft -s /bin/bash minecraft && echo "Minecraft User Added"
 sleep 3
 echo "" && echo "Creating Minecraft Server Directories and Installing Server"
     sleep 2
+    echo ""
     sudo -u minecraft bash -c 'mkdir -p ~/{backups,tools,server}' && echo '"backups", "tools" and "server" directories created.'
     sleep 2
     clear
     echo "Now installing mcrcon"
+    echo ""
     sudo -u minecraft bash -c 'git clone https://github.com/Tiiffi/mcrcon.git ~/tools/mcrcon' && echo "mcrcon successfully downloaded"
     echo "Now installing GCC"
     sudo apt-get install gcc -y && echo "GCC Successfully Installed"
@@ -223,12 +230,15 @@ echo "Please give me an RCON port.  If you'd like to use the default of \"25575\
 if [ "$rcon_port" = "" ]; then
   rcon_port=25575
   echo "rcon port is set to DEFAULT: "$rcon_port
+  echo ""
 else
   echo "rcon port is now: "$rcon_port
+  echo ""
 fi
 
 echo "Please give me an RCON password.  This should be relatively secure."
   read rcon_password
+echo ""
 sudo sed -i "s/\("rcon.port" *= *\).*/\1$rcon_port/" /opt/minecraft/server/server.properties
 sudo sed -i "s/\("rcon.password" *= *\).*/\1$rcon_password/" /opt/minecraft/server/server.properties
 sudo sed -i "s/\("enable-rcon" *= *\).*/\1true/" /opt/minecraft/server/server.properties
@@ -243,9 +253,11 @@ sleep 2
   systemd_unit_creation
   sudo systemctl daemon-reload
   sudo systemctl start minecraft
+echo ""
 #Open up ports in firewall
 echo "Now opening up firewall for Minecraft server."
   sudo ufw allow 25565/tcp
+echo ""
 
 #####  Configure Backups  #####
 #Create the backup file
@@ -253,10 +265,12 @@ echo "Now creating Minecraft world backup script."
   create_backup_file
   sudo chown minecraft:minecraft /opt/minecraft/tools/backup.sh && echo "Minecraft backup script created successfully"
   sudo chmod +x /opt/minecraft/tools/backup.sh
+echo ""
 #Add this shell script to the crontab
 echo "Adding backup script to crontab"
   sudo -u minecraft bash -c 'echo "0 23 * * * /opt/minecraft/tools/backup.sh" | crontab -' && echo "Done!"
   sleep 2
+echo ""
 
 #Displaying Minecraft Server
 clear
