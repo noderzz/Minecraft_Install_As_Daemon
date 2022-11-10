@@ -15,21 +15,39 @@ This project is a semi-automated script for installing a vanilla Minecraft serve
 
 <h2>Program walk-through:</h2>
 
+<h4>Clone the repository and go into the directory</h4>
 <p align="center">
-Clone the repository.<br/>
-<br />
-<br />
-Run the script.<br/>
-<br />
-<br />
-Input an RCON port and password.<br/>
-<br />
-<br />
-Select amount of memory to run server with.<br/>
-<br />
-<br />
-Verify server is running.<br/>
+<img src="https://imgur.com/4Oj7BEW.png" alt="Clone GitHub Repository" class="center">
+</p>
 
+```
+git clone https://github.com/noderzz/Minecraft_Install_As_Daemon.git
+cd Minecraft_Install_As_Daemon
+```
+
+<h4>Make the mc_terminal_script.sh executable and run it.</h4>
+
+```
+chmod += minecraft_daemon.sh
+./minecraft_daemon.sh
+```
+<h4>Input an RCON port and password.</h4>
+<br />
+<br />
+<h4>Select amount of memory to run server with.</h4>
+<br />
+<br />
+<h4>Verify server is running.</h4>
+<br />
+<br />
+<h4>Run mc_terminal_script.sh to run server commands on the newly installed Minecraft Server</h4>
+<i>Be sure to wait 5-10 minutes after running the <strong>minecraft_daemon.sh</strong> script before running the <strong>mc_terminal_script.sh</strong> script.  The server will need a few minutes to generate the world and if you're too quick to run the script you may give an error stating that the terminal script could not connect.</i>
+<br></br>
+
+```
+chmod += mc_terminal_script.sh
+./mc_terminal_script.sh
+```
 
 <!--
  ```diff
