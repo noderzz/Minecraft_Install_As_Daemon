@@ -350,7 +350,9 @@ if [ "$is_mc_server_running" != "active" ]; then
     exit
 else
     echo "Minecraft Server Installation Complete!"
-    echo "Try having users connect to the IP "$local_ip
+    echo "Try having users connect to the IP "$local_ip && echo ""
+    echo "If you'd like to run some server commands (like to make a player a server operator) please run the following script!" && echo ""
+    echo "mc_terminal_script.sh"
     exit
 fi
 
