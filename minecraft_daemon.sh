@@ -17,6 +17,8 @@ quick_check=""
 mc_server_difficulty=""
 mc_seed=""
 world_name=""
+is_mc_server_running=""
+local_ip=`ip a | grep brd | grep inet | cut -d/ -f1 | cut -d" " -f6`
 
 #################
 ### Functions ###
@@ -341,5 +343,14 @@ echo "Adding backup script to crontab"
 
 #Displaying Minecraft Server
 clear
-echo "Minecraft Server Installation Complete"
-sudo systemctl status minecraft
+is_mc_server_running=`sudo systemctl status minecraft | grep Active | cut -d: -f2 | cut -d" " -f2`
+if [ "$is_mc_server_running" != "active" ]; then
+    echo "Unfortunately it looks like the Minecraft server is not running."
+    echo 'You may want to try running "sudo systemctl restart minecraft".'
+    exit
+else
+    echo "Minecraft Server Installation Complete!"
+    echo "Try having users connect to the IP "$local_ip
+    exit
+fi
+
