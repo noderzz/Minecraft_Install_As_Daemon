@@ -1,6 +1,7 @@
 #!bin/bash
 clear
 #variables
+CYN='\033[0;36m'
 RED='\033[0;31m'
 NC='\033[0m'
 is_mc_server_running=""
@@ -19,9 +20,9 @@ fi
 #Open terminal
 clear
 echo "This is the MC terminal to input server commands." && echo ""
-echo -e ${RED}"If you just downloaded the server and are seeing an error stating you cannot connect, please wait 5-10 minutes for the Minecraft Server to fully spin up and try again." && echo "" 
-echo -e ${NC}"If you want more information on what commands you can use, visit https://minecraft.fandom.com/wiki/Commands"
+echo ${RED}"If you just downloaded the server and are seeing an error stating you cannot connect, please wait 5-10 minutes for the Minecraft Server to fully spin up and try again." && echo "" 
+echo ${NC}"If you want more information on what commands you can use, visit https://minecraft.fandom.com/wiki/Commands"
 echo "(You don't need to start any commands with the '/').  Example - To make someone a server operator you'd run:"
-echo "" && echo "op MINECRAFT_USERNAME" && echo "" 
+echo "" && echo ${CYN}"op MINECRAFT_USERNAME"${NC} && echo "" 
 
 sudo /opt/minecraft/tools/mcrcon/mcrcon -H 127.0.0.1 -P $rcon_port -p $rcon_password
