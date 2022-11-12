@@ -28,7 +28,7 @@ cd Minecraft_Install_As_Daemon
 <h4>Make the mc_terminal_script.sh executable and run it.</h4>
 
 ```
-chmod += minecraft_daemon.sh
+chmod +x minecraft_daemon.sh
 ./minecraft_daemon.sh
 ```
 <h4>Input an RCON port and password.</h4>
@@ -45,7 +45,7 @@ chmod += minecraft_daemon.sh
 <br></br>
 
 ```
-chmod += mc_terminal_script.sh
+chmod +x mc_terminal_script.sh
 ./mc_terminal_script.sh
 ```
 
