@@ -352,7 +352,9 @@ else
     echo "Minecraft Server Installation Complete!"
     echo "Try having users connect to the IP "$local_ip && echo ""
     echo "If you'd like to run some server commands (like to make a player a server operator) please run the following script!" && echo ""
-    echo "mc_terminal_script.sh"
+    echo ${CYN}"mc_terminal_script.sh"${NC} && echo ""
+    echo "If you'd like to make your server a private server and whitelist users, run the following script!" && echo ""
+    echo ${CYN}"mc_terminal_script.sh"${NC}
     exit
 fi
 
