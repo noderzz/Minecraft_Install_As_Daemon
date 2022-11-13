@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#######################
+### Color Variables ###
+#######################
+CYN='\033[0;36m'
+RED='\033[0;31m'
+NC='\033[0m'
+GRN='\033[0;32m'
+
 #################
 ### Variables ###
 #################
@@ -20,18 +28,19 @@ world_name=""
 is_mc_server_running=""
 local_ip=`ip a | grep brd | grep inet | cut -d/ -f1 | cut -d" " -f6`
 
+
 #################
 ### Functions ###
 #################
 
 set_resources () {
    total_mem=`free -h | grep Mem | cut -d ":" -f2 | cut -d "." -f1 | tr -d " "`
-   echo "It looks like you have a total of "$total_mem"G of memory."
-   echo "It may not be the best idea to use all available memory for the server, how much ram would you like to use to run the minecraft server?"
+   echo "It looks like you have a total of ${GRN}"$total_mem"G${NC} of memory."
+   echo ${RED}"It may not be the best idea to use all available memory for the server${NC}, how much ram would you like to use to run the minecraft server?"
    read minecraft_mem
    if [ "$minecraft_mem" -gt "$total_mem" ]; then
      clear
-     echo "You don't seem to have that much memory available."
+     echo ${RED}"You don't seem to have that much memory available."${NC}
      set_resources
    else
      minecraft_mem=$((minecraft_mem*1024))
@@ -83,7 +92,7 @@ find /opt/minecraft/backups/ -type f -mtime +7 -name '*.gz' -delete
 server_download_check () {
   quick_check=`echo $user_url | grep "server.jar"`
   if [ "$quick_check" = "" ]; then
-        echo "It doesn't appear that the link downloads a Minecraft Server."
+        echo ${RED}"It doesn't appear that the link downloads a Minecraft Server."${NC}
         echo "Would you like to try again?"
         echo "
         1) Yes
@@ -109,7 +118,7 @@ server_download_check () {
 }
 
 server_customize () {
-  echo "Would you like to add a server seed, world name and difficulty setting?"
+  echo ${CYN} "Would you like to add a server seed, world name and difficulty setting?"${NC}
   echo ""
   echo "
   (1) No, please generate a random seed and use all default settings.
@@ -123,7 +132,7 @@ server_customize () {
           break
         ;;
         2)
-            echo "What would you like the difficulty setting set to?"
+            echo ${CYN}"What would you like the difficulty setting set to?"${NC}
             echo ""
             echo "
             (1) Peaceful
@@ -173,7 +182,7 @@ server_customize () {
 }
 
 enter_minecraft_server_version () {
-  echo "Currently this script installs Minecraft version "$current_mc_version"."
+  echo ${CYN}"Currently this script installs Minecraft version "$current_mc_version"."${NC}
   echo "What would you like to do?"
   echo "
   (1) Continue with the "$current_mc_version" Install.
@@ -188,7 +197,7 @@ enter_minecraft_server_version () {
            sudo -u minecraft bash -c 'wget https://piston-data.mojang.com/v1/objects/f69c284232d7c7580bd89a5a4931c3581eae1378/server.jar -P ~/server' && echo "Minecraft server downloaded"
            sleep 2
            sudo -u minecraft bash -c 'cd ~/server && java -Xmx1024M -Xms1024M -jar server.jar nogui'
-           sudo sed -i "s/\("eula" *= *\).*/\1true/" /opt/minecraft/server/eula.txt && echo "Server Installed"
+           sudo sed -i "s/\("eula" *= *\).*/\1true/" /opt/minecraft/server/eula.txt && echo ${GRN}"Server Installed"${NC}
         ;;
         2)
         echo "Please paste in the URL for the Minecraft Server you'd like to download: "
@@ -199,12 +208,12 @@ enter_minecraft_server_version () {
             sudo -u minecraft bash -c "wget $user_url -P ~/server" && echo "Minecraft server downloaded"
             sleep 2
             sudo -u minecraft bash -c 'cd ~/server && java -Xmx1024M -Xms1024M -jar server.jar nogui'
-            sudo sed -i "s/\("eula" *= *\).*/\1true/" /opt/minecraft/server/eula.txt && echo "Server Installed"
+            sudo sed -i "s/\("eula" *= *\).*/\1true/" /opt/minecraft/server/eula.txt && echo ${GRN}"Server Installed"${NC}
         ;;
         *)
         clear
         echo "Invalid option"
-        echo 'Please select option "1" or "2"'
+        echo ${RED}'Please select option "1" or "2"'${NC}
           echo ""
           echo "Currently this script installs Minecraft version "$current_mc_version"."
           echo "What would you like to do?"
@@ -235,14 +244,14 @@ echo "Now checking if current user has root privileges"
   answer=`sudo whoami`
 
 if [ "$answer" != "root" ]; then 
-  echo "It doesn't appear that your user has root privileges."
+  echo ${RED}"It doesn't appear that your user has root privileges."${NC}
   sleep 1
   echo "Please login as a user with sudo/root privileges and try again."
   sleep 1
   echo "Now exiting script."
   exit 1
 else
-  echo "It appears this user has root privileges."
+  echo ${GRN}"It appears this user has root privileges."${NC}
   sleep 1
 fi
 
@@ -257,7 +266,9 @@ if [ "$javacheck" = 16 ] || [ "$javacheck" = 17 ] || [ "$javacheck" = 18 ]; then
   echo ""
   sleep 2
 else
-  echo "Java version too old or not detected."
+  echo ${RED}"Java version too old or not detected."${NC}
+  echo ""
+  echo ${CYN}"Now installing latest Java version"${NC}
   echo ""
   sleep 2
   sudo apt install openjdk-18-jre-headless -y
@@ -267,22 +278,23 @@ fi
 clear
 echo "Creating Minecraft system user to run Minecraft server"
 echo ""
-sudo useradd -r -m -U -d /opt/minecraft -s /bin/bash minecraft && echo "Minecraft User Added"
+sudo useradd -r -m -U -d /opt/minecraft -s /bin/bash minecraft && echo ${GRN}"Minecraft User Added"${NC}
 sleep 3
 echo "" && echo "Creating Minecraft Server Directories and Installing Server"
     sleep 2
     echo ""
-    sudo -u minecraft bash -c 'mkdir -p ~/{backups,tools,server}' && echo '"backups", "tools" and "server" directories created.'
+    sudo -u minecraft bash -c 'mkdir -p ~/{backups,tools,server}' && echo ${GRN}'"backups", "tools" and "server" directories created.'${NC}
     sleep 2
     clear
     echo "Now installing mcrcon"
     echo ""
-    sudo -u minecraft bash -c 'git clone https://github.com/Tiiffi/mcrcon.git ~/tools/mcrcon' && echo "mcrcon successfully downloaded"
+    sudo -u minecraft bash -c 'git clone https://github.com/Tiiffi/mcrcon.git ~/tools/mcrcon' && echo ${GRN}"mcrcon successfully downloaded"${NC}
+    clear
     echo "Now installing GCC"
     sudo apt-get install gcc -y && echo "GCC Successfully Installed"
     sleep 2
     echo "Now completing mcrcon installation."
-    sudo -u minecraft bash -c 'gcc -std=gnu11 -pedantic -Wall -Wextra -O2 -s -o ~/tools/mcrcon/mcrcon ~/tools/mcrcon/mcrcon.c' && echo "mcrcon successfully installed"
+    sudo -u minecraft bash -c 'gcc -std=gnu11 -pedantic -Wall -Wextra -O2 -s -o ~/tools/mcrcon/mcrcon ~/tools/mcrcon/mcrcon.c' && echo ${GRN}"mcrcon successfully installed"${NC}
     sleep 2
     clear
 
@@ -297,10 +309,10 @@ echo "Please give me an RCON port.  If you'd like to use the default of \"25575\
     read rcon_port
       if [ "$rcon_port" = "" ]; then
         rcon_port=25575
-        echo "rcon port is set to DEFAULT: "$rcon_port
+        echo ${GRN}"rcon port is set to DEFAULT: "$rcon_port ${NC}
         echo ""
       else
-        echo "rcon port is now: "$rcon_port
+        echo ${GRN}"rcon port is now: "$rcon_port ${NC}
         echo ""
       fi
 echo "Please give me an RCON password.  This should be relatively secure."
@@ -317,27 +329,27 @@ server_customize
 set_resources
 #Create Systemd Unit File and start the daemon
 clear
-echo "Now creating Minecraft Systemd Unit File."
+echo ${CYN}"Now creating Minecraft Systemd Unit File."${NC}
   sleep 2
     systemd_unit_creation
     sudo systemctl daemon-reload
     sudo systemctl start minecraft
 echo ""
 #Open up ports in firewall
-echo "Now opening up firewall for Minecraft server."
+echo ${CYN}"Now opening up firewall for Minecraft server."${NC}
   sudo ufw allow 25565/tcp
     echo ""
 
 #####  Configure Backups  #####
 #Create the backup file
-echo "Now creating Minecraft world backup script."
+echo ${CYN}"Now creating Minecraft world backup script."${NC}
   create_backup_file
-  sudo chown minecraft:minecraft /opt/minecraft/tools/backup.sh && echo "Minecraft backup script created successfully"
+  sudo chown minecraft:minecraft /opt/minecraft/tools/backup.sh && echo ${GRN}"Minecraft backup script created successfully"${NC}
   sudo chmod +x /opt/minecraft/tools/backup.sh
     echo ""
 #Add this shell script to the crontab
-echo "Adding backup script to crontab"
-  sudo -u minecraft bash -c 'echo "0 23 * * * /opt/minecraft/tools/backup.sh" | crontab -' && echo "Done!"
+echo ${CYN}"Adding backup script to crontab"${NC}
+  sudo -u minecraft bash -c 'echo "0 23 * * * /opt/minecraft/tools/backup.sh" | crontab -' && echo ${GRN}"Done!"${NC}
   sleep 2
     echo ""
 
@@ -345,12 +357,12 @@ echo "Adding backup script to crontab"
 clear
 is_mc_server_running=`sudo systemctl status minecraft | grep Active | cut -d: -f2 | cut -d" " -f2`
 if [ "$is_mc_server_running" != "active" ]; then
-    echo "Unfortunately it looks like the Minecraft server is not running."
+    echo ${RED}"Unfortunately it looks like the Minecraft server is not running."${NC}
     echo 'You may want to try running "sudo systemctl restart minecraft".'
     exit
 else
-    echo "Minecraft Server Installation Complete!"
-    echo "Try having users connect to the IP "$local_ip && echo ""
+    echo ${GRN}"Minecraft Server Installation Complete!"${NC}
+    echo "Try having users connect to the IP "${CYN} $local_ip ${NC} && echo ""
     echo "If you'd like to run some server commands (like to make a player a server operator) please run the following script!" && echo ""
     echo ${CYN}"mc_terminal_script.sh"${NC} && echo ""
     echo "If you'd like to make your server a private server and whitelist users, run the following script!" && echo ""
